@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""
+Grok CLI - Simple command line tool for InvestmentResearch development.
+
+Makes it easy to resume and work after restarts without typing long commands.
+
+Usage:
+  ./grok resume                 # Restore state after computer restart
+  ./grok status                 # Show graph + intelligence status
+  ./grok report                 # Show detailed intelligence usage report
+  ./grok save                   # Save current graph + intelligence report
+  ./grok discover [scope]       # Trigger discovery (default: space-industry)
+  ./grok discover --list        # List available scopes
+"""
+
+import os
+import sys
+import subprocess
+import argparse
+from pathlib import Path
+
+# Make sure we are in the project root
+PROJECT_ROOT = Path(__file__).parent.resolve()
+os.chdir(PROJECT_ROOT)
+
+# Add backend/app to Python path so we can import cleanly
+BACKEND_PATH = str(PROJECT_ROOT / "backend" / "app")
+if BACKEND_PATH not in sys.path:
+    sys.path.insert(0, BACKEND_PATH)
+
+def main():
+    parser = argparse.ArgumentParser(
+        prog="grok",
+        description="Grok CLI for InvestmentResearch project"
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    # === resume ===
+    subparsers.add_parser(
+        "resume", 
+        help="Restore graph from snapshot and show current status (use after restart)"
+    )
+
+    # === status ===
+    subparsers.add_parser(
+        "status", 
+        help="Show quick status of graph and Intelligence system"
+    )
+
+    # === report ===
+    subparsers.add_parser(
+        "report", 
+        help="Print the latest Intelligence cost/latency usage report"
+    )
+
+    # === save ===
+    subparsers.add_parser(
+        "save", 
+        help="Save current graph state + Intelligence report"
+    )
+
+    # === discover ===
+    discover = subparsers.add_parser(
+        "discover", 
+        help="Trigger LLM-powered discovery for a scope"
+    )
+    discover.add_argument(
+        "scope", 
+        nargs="?", 
+        default="space-industry",
+        help="Scope to discover (e.g. space-industry, autonomous-ai)"
+    )
+    discover.add_argument(
+        "--list", 
+        action="store_true",
+        help="List available top-level scopes instead of running"
+    )
+
+    # === shell (bonus) ===
+    subparsers.add_parser(
+        "shell", 
+        help="Drop into a Python shell with correct PYTHONPATH"
+    )
+
+    args = parser.parse_args()
+
+    if args.command == "resume":
+        cmd_resume()
+    elif args.command == "status":
+        cmd_status()
+    elif args.command == "report":
+        cmd_report()
+    elif args.command == "save":
+        cmd_save()
+    elif args.command == "discover":
+        cmd_discover(args.scope, args.list)
+    elif args.command == "shell":
+        cmd_shell()
+    else:
+        parser.print_help()
+
+def cmd_resume():
+    print("🔄  Grok Resume — Restoring development state...\n")
+
+    # Restore graph using existing helper if possible, otherwise direct
+    print("📦  Restoring graph from latest snapshot...")
+    try:
+        subprocess.run(
+            [sys.executable, "restore_graph.py"],
+            check=True,
+            capture_output=True,
+            text=True
+        )
+        print("   ✓ Graph restored using restore_graph.py")
+    except Exception:
+        # Fallback
+        from models.graph import GraphStore
+        store = GraphStore("data/graph.db")
+        store.import_json("data/graph.json", clear_first=True)
+        store.close()
+        print("   ✓ Graph restored from data/graph.json")
+
+    print()
+    cmd_status()
+
+def cmd_status():
+    from models.graph import GraphStore
+    from intelligence import get_intelligence, TaskType
+
+    print("=== Graph Status ===")
+    try:
+        store = GraphStore("data/graph.db")
+        nodes = store.get_all_nodes()
+        edges = store.get_all_edges()
+        print(f"  Nodes: {len(nodes)}")
+        print(f"  Edges: {len(edges)}")
+        store.close()
+    except Exception as e:
+        print(f"  (Unable to read graph: {e})")
+
+    print("\n=== Intelligence Status ===")
+    try:
+        intel = get_intelligence()
+        raw = intel.get_raw_config()
+        print(f"  Default provider: {raw.get('default_provider', 'xai')}")
+
+        key_tasks = [TaskType.SEMANTIC_SEARCH, TaskType.STRUCTURED_EXTRACTION]
+        for task in key_tasks:
+            m = intel.choose_best(task)
+            cost = m.input_price_per_million + m.output_price_per_million
+            print(f"  {task.value:25} → {m.provider}/{m.model}  "
+                  f"(~${cost:.2f}/M tok, ~{int(m.avg_latency_ms_per_1k)}ms/1k)")
+
+        records = intel.load_usage(limit=5)
+        if records:
+            print(f"\n  Recent activity: {len(records)} records in usage log")
+            last = records[-1]
+            print(f"  Last: {last.get('task')} on {last.get('provider')}/{last.get('model')} "
+                  f"— ${last.get('estimated_cost', 0):.5f}")
+    except Exception as e:
+        print(f"  (Intelligence error: {e})")
+
+    print("\nTip: Use 'grok report' for full cost/latency breakdown")
+
+def cmd_report():
+    from intelligence import get_intelligence
+    intel = get_intelligence()
+    print(intel.get_usage_report())
+
+def cmd_save():
+    print("💾  Saving current state...")
+    try:
+        subprocess.run([sys.executable, "save_graph.py"], check=True)
+    except Exception:
+        from models.graph import GraphStore
+        store = GraphStore("data/graph.db")
+        store.export_json("data/graph.json")
+        store.close()
+        print("   ✓ Graph snapshot saved")
+
+    from intelligence import get_intelligence
+    intel = get_intelligence()
+    intel.save_report("data/intelligence/report.md")
+    print("   ✓ Intelligence report saved to data/intelligence/report.md")
+    print("\nState saved successfully.")
+
+def cmd_discover(scope: str, list_only: bool = False):
+    from models.graph import load_scopes_from_config, discover_developments, GraphStore, upsert_graph_deltas, ScopeNode
+
+    config = load_scopes_from_config()
+    scopes = [t["stable_key"] for t in config.get("top_level_scopes", [])]
+
+    if list_only:
+        print("Available top-level scopes:")
+        for s in scopes:
+            print(f"  - {s}")
+        return
+
+    if scope not in scopes:
+        print(f"❌ Unknown scope: {scope}")
+        print("Available scopes:", scopes)
+        print("Run: grok discover --list")
+        return
+
+    print(f"🚀  Triggering discovery for '{scope}' using Intelligence...")
+
+    store = GraphStore("data/graph.db")
+
+    target = None
+    for top in config.get("top_level_scopes", []):
+        if top["stable_key"] == scope:
+            target = ScopeNode(
+                stable_key=top["stable_key"],
+                properties={k: v for k, v in top.items() if k not in ["children", "search_queries"]}
+            )
+            break
+
+    if not target:
+        print("Could not build scope node")
+        return
+
+    deltas = discover_developments(target, use_real_search=True, config=config)
+    upsert_graph_deltas(deltas, store)
+    print(f"✓ Discovery completed for {scope}")
+    store.close()
+
+def cmd_shell():
+    print("🐍  Starting Python shell with project environment...")
+    print("   (import models.graph, intelligence, etc. directly)\n")
+    os.environ["PYTHONPATH"] = BACKEND_PATH + ":" + os.environ.get("PYTHONPATH", "")
+    os.execvp(sys.executable, [sys.executable, "-i", "-c", 
+        "print('Grok dev shell ready. Try: from intelligence import get_intelligence')"])
+
+if __name__ == "__main__":
+    main()

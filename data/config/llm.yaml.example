@@ -1,0 +1,101 @@
+# =============================================================================
+# Intelligence Configuration - All LLM access (external + local)
+# =============================================================================
+# Copy to data/config/llm.yaml and configure your providers.
+#
+# The Intelligence feature automatically chooses the best LLM per task.
+
+default_provider: xai
+
+# -----------------------------------------------------------------------------
+# Intelligence routing - tells the system which model is best for which job
+# -----------------------------------------------------------------------------
+intelligence:
+  # Scoring weights for choose_best (higher = more influence on selection)
+  scoring:
+    cost_weight: 0.25
+    latency_weight: 0.20
+    quality_weight: 0.55
+
+  routing:
+    semantic_search:
+      preferred: [xai, openai]
+    structured_extraction:
+      preferred: [xai, openai]
+      requires_json: true
+    entity_resolution:
+      preferred: [xai, openai]
+    classification:
+      preferred: [xai, openai]
+    general:
+      preferred: [xai, openai]
+
+  # Tool calling strategy per task
+  tool_strategies:
+    semantic_search:
+      strategy: "native_if_available"   # native_if_available | prompt_based | disabled
+    structured_extraction:
+      strategy: "disabled"
+    general:
+      strategy: "native_if_available"
+
+  # Model metadata (pricing in USD per million tokens, latency estimates)
+  models:
+    "xai/grok-3":
+      input_price_per_million: 5.00
+      output_price_per_million: 15.00
+      avg_latency_ms_per_1k: 380
+      supports_tool_calling: true
+    "openai/gpt-4o":
+      input_price_per_million: 2.50
+      output_price_per_million: 10.00
+      avg_latency_ms_per_1k: 420
+      supports_tool_calling: true
+    "openai/gpt-4o-mini":
+      input_price_per_million: 0.15
+      output_price_per_million: 0.60
+      avg_latency_ms_per_1k: 280
+      supports_tool_calling: true
+    "ollama/llama3.1":
+      input_price_per_million: 0.0
+      output_price_per_million: 0.0
+      avg_latency_ms_per_1k: 950
+      supports_tool_calling: false
+
+providers:
+  xai:
+    api_key: ""   # or set XAI_API_KEY environment variable
+    base_url: https://api.x.ai/v1
+    default_model: grok-3
+    temperature: 0.1
+    max_tokens: 2000
+    strengths: [search, reasoning, extraction, tools, json]
+
+  openai:
+    api_key: ""   # or set OPENAI_API_KEY
+    base_url: https://api.openai.com/v1
+    default_model: gpt-4o
+    temperature: 0.1
+    max_tokens: 2000
+    strengths: [extraction, json, reasoning]
+
+  # Local LLMs via OpenAI-compatible servers (Ollama, LM Studio, vLLM, etc.)
+  ollama:
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+    default_model: llama3.1
+    temperature: 0.2
+    max_tokens: 4000
+    supports_json_mode: true
+    strengths: [extraction, reasoning, local, private, speed]
+
+  lmstudio:
+    base_url: http://localhost:1234/v1
+    api_key: lm-studio
+    default_model: local-model
+    strengths: [local, extraction]
+
+  # Example custom local server
+  # local:
+  #   base_url: http://localhost:8000/v1
+  #   default_model: your-fine-tuned-model

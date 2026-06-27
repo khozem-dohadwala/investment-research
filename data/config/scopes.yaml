@@ -1,0 +1,533 @@
+# Top-down Scope configuration — Highest Level
+# 
+# The highest level consists of top-level Scopes with kind: "domain".
+# These represent the primary Industries being researched.
+#
+# Per user specification:
+# - Space Industry
+# - Autonomous AI Industry
+# - AI Models and Infrastructure Industry
+# - Crypto Industry
+# (L1s consolidated, CeFi+Regulation merged, Mining into Network Security)
+#
+# These are the L0 root nodes in the graph (shown on Home / All Industries).
+# Sub-scopes (areas, themes, etc.) are children via PARENT_OF edges.
+# Knowledge (Entities) attaches flexibly via MEMBER_OF edges.
+
+discovery:
+  # Global discovery settings (override per industry/scope if needed)
+  enabled: true
+  default_model: "grok-3"
+  default_temperature: 0.1
+  max_results_per_query: 15
+  min_confidence: 0.65
+  refresh_cron: "0 */4 * * *"   # every 4 hours
+  use_real_search: true
+  search_provider: "xai"
+  persist_to: "data/graph.json"
+  # Per-aspect query templates can be overridden per scope below
+  # search_queries are defined per top-level scope for now
+
+top_level_scopes:
+  - stable_key: space-industry
+    name: "Space Industry"
+    kind: domain
+    description: "Launch vehicles, satellites, space exploration, and supporting infrastructure"
+    default_aspects:
+      - companies
+      - capabilities
+      - technology
+      - products
+      - events
+    search_queries:  # per-aspect discovery templates (used by discovery pipeline)
+      - aspect: companies
+        query: "major companies and organizations active in {scope_name} space industry 2024 2025"
+      - aspect: technology
+        query: "recent technology developments advancements in {scope_name} space"
+      - aspect: capabilities
+        query: "new capabilities performance milestones in {scope_name} space industry"
+      - aspect: products
+        query: "new products systems launches in {scope_name} space"
+      - aspect: events
+        query: "recent events milestones news in {scope_name} space industry 2024 2025"
+    discovery:
+      enabled: true
+      refresh_cron: "0 */6 * * *"   # every 6 hours
+      max_results_per_query: 10
+      min_confidence: 0.7
+      model: "grok-3"               # or grok-4
+      temperature: 0.1
+    children:
+      - stable_key: launch-capabilities
+        name: "Launch Capabilities"
+        kind: sub_domain
+        description: "Rockets, vehicles, and systems to reach and operate in space"
+        children:
+          - stable_key: reusable-launch
+            name: "Reusable Launch Vehicles"
+            kind: area
+            description: "Falcon-class boosters, first-stage recovery, rapid reuse"
+          - stable_key: heavy-lift
+            name: "Heavy-Lift Launch Vehicles"
+            kind: area
+            description: "Starship, SLS, and next-generation super-heavy lift"
+          - stable_key: small-launch
+            name: "SmallSat & Rideshare Launch"
+            kind: area
+            description: "Dedicated small launchers and rideshare services"
+          - stable_key: reusability
+            name: "Booster Reusability & Recovery"
+            kind: area
+            description: "Landing legs, recovery vessels, refurbishment, turnaround"
+      - stable_key: satellite-systems
+        name: "Satellite Systems & Constellations"
+        kind: sub_domain
+        description: "On-orbit platforms, constellations, and space infrastructure"
+        children:
+          - stable_key: broadband-constellations
+            name: "Broadband LEO Constellations"
+            kind: area
+            description: "Starlink, OneWeb, Kuiper — global broadband"
+          - stable_key: earth-observation
+            name: "Earth Observation & Remote Sensing"
+            kind: area
+            description: "Optical, SAR, hyperspectral, climate, and ISR"
+          - stable_key: pnt-navigation
+            name: "Navigation, Timing & Communications"
+            kind: area
+            description: "PNT, satcom, and data relay"
+          - stable_key: in-orbit-services
+            name: "In-Orbit Servicing & Manufacturing"
+            kind: area
+            description: "Refueling, repair, assembly, debris removal, ISRU"
+      - stable_key: propulsion
+        name: "Propulsion & Power"
+        kind: sub_domain
+        description: "Engines and power systems for launch and in-space use"
+        children:
+          - stable_key: chemical-propulsion
+            name: "Chemical Propulsion"
+            kind: area
+          - stable_key: electric-propulsion
+            name: "Electric & Ion Propulsion"
+            kind: area
+          - stable_key: advanced-propulsion
+            name: "Advanced & Nuclear Propulsion"
+            kind: area
+      - stable_key: space-hardened-hardware
+        name: "Space Hardened Hardware"
+        kind: sub_domain
+        description: "Radiation-hardened and space-qualified electronics, power systems, and components"
+        children:
+          - stable_key: chips-circuits
+            name: "Chips and Circuits"
+            kind: area
+            description: "Radiation-hardened processors, memory, FPGAs, and integrated circuits"
+          - stable_key: solar-panels
+            name: "Solar Panels"
+            kind: area
+            description: "Space-grade solar arrays and photovoltaic systems"
+          - stable_key: other-hardware
+            name: "Other Hardware"
+            kind: area
+            description: "Batteries, sensors, actuators, connectors, and other space-qualified components"
+      - stable_key: human-spaceflight
+        name: "Human Spaceflight & Exploration"
+        kind: sub_domain
+        description: "Crewed vehicles, habitats, and deep-space missions"
+        children:
+          - stable_key: crewed-vehicles
+            name: "Crewed Vehicles & Capsules"
+            kind: area
+          - stable_key: deep-space
+            name: "Deep Space & Lunar/Mars Exploration"
+            kind: area
+      - stable_key: moon-based-activities
+        name: "Moon Based Activities"
+        kind: sub_domain
+        description: "Infrastructure, operations, and resource utilization on the lunar surface"
+        children:
+          - stable_key: moon-base
+            name: "Moon Base"
+            kind: area
+            description: "Permanent habitats, bases, and lunar surface operations"
+          - stable_key: moon-mining
+            name: "Moon Mining"
+            kind: area
+            description: "In-situ resource utilization (ISRU), regolith mining, and lunar resources"
+      - stable_key: ground-segment
+        name: "Ground Segment & Operations"
+        kind: area
+        description: "Launch sites, mission control, ground stations, SSA"
+
+  - stable_key: autonomous-ai
+    name: "Autonomous AI Industry"
+    kind: domain
+    description: "Autonomous systems, robotics, self-driving, and agentic AI applications"
+    default_aspects:
+      - companies
+      - capabilities
+      - technology
+      - events
+    search_queries:
+      - aspect: companies
+        query: "major companies in {scope_name} autonomous AI"
+      - aspect: technology
+        query: "recent technology developments in {scope_name} autonomous systems"
+    children:
+      - stable_key: ground-vehicles
+        name: "Ground Autonomous Vehicles"
+        kind: sub_domain
+        description: "Self-driving cars, trucks, and ground-based robotic systems"
+        children:
+          - stable_key: passenger-av
+            name: "Autonomous Passenger Vehicles"
+            kind: area
+            description: "Robotaxis, autonomous cars, and personal mobility"
+          - stable_key: trucking
+            name: "Autonomous Trucking & Logistics"
+            kind: area
+            description: "Long-haul autonomous trucks and freight"
+          - stable_key: last-mile
+            name: "Delivery & Last-Mile Robotics"
+            kind: area
+            description: "Sidewalk robots, delivery vehicles, and urban logistics"
+      - stable_key: aerial-autonomy
+        name: "Aerial Autonomy"
+        kind: sub_domain
+        description: "Drones, eVTOL, and unmanned aerial systems"
+        children:
+          - stable_key: commercial-drones
+            name: "Commercial Drones & Delivery UAVs"
+            kind: area
+          - stable_key: evtol
+            name: "eVTOL & Urban Air Mobility"
+            kind: area
+          - stable_key: defense-uav
+            name: "Defense, Surveillance & Inspection UAVs"
+            kind: area
+      - stable_key: maritime-subsea
+        name: "Maritime & Subsea Autonomy"
+        kind: sub_domain
+        description: "Autonomous ships, vessels, and underwater systems"
+        children:
+          - stable_key: surface-vessels
+            name: "Autonomous Surface Vessels"
+            kind: area
+          - stable_key: underwater
+            name: "Underwater Vehicles & ROVs"
+            kind: area
+      - stable_key: humanoids-service
+        name: "Humanoids & Service Robotics"
+        kind: sub_domain
+        description: "Human-like robots and service-oriented autonomous systems"
+        children:
+          - stable_key: humanoids
+            name: "Humanoid Robots"
+            kind: area
+            description: "General-purpose humanoid robots for homes and work"
+          - stable_key: service-robots
+            name: "Service & Companion Robots"
+            kind: area
+      - stable_key: industrial-automation
+        name: "Industrial & Warehouse Automation"
+        kind: sub_domain
+        description: "Factory, logistics, and heavy industry robotics"
+        children:
+          - stable_key: warehouse
+            name: "Warehouse & Logistics Robotics"
+            kind: area
+          - stable_key: factory
+            name: "Factory & Manufacturing Automation"
+            kind: area
+      - stable_key: defense-security
+        name: "Defense & Security Autonomy"
+        kind: sub_domain
+        description: "Autonomous systems for defense, border, and public safety"
+        children:
+          - stable_key: military-robots
+            name: "Military & Tactical Robots"
+            kind: area
+          - stable_key: security
+            name: "Security & Surveillance Robots"
+            kind: area
+      - stable_key: autonomy-software
+        name: "Autonomy Software & AI Stack"
+        kind: sub_domain
+        description: "Core AI, perception, planning, and simulation for autonomy"
+        children:
+          - stable_key: perception
+            name: "Perception & Sensing"
+            kind: area
+          - stable_key: planning
+            name: "Planning, Control & Decision Making"
+            kind: area
+          - stable_key: simulation
+            name: "Simulation, Digital Twins & Testing"
+            kind: area
+
+  - stable_key: ai-models-infra
+    name: "AI Models and Infrastructure Industry"
+    kind: domain
+    description: "Foundation models, training infrastructure, chips, data centers, and inference platforms"
+    default_aspects:
+      - companies
+      - capabilities
+      - technology
+      - market
+    search_queries:
+      - aspect: technology
+        query: "recent advances in {scope_name} foundation models and training"
+      - aspect: events
+        query: "new model releases benchmarks in {scope_name}"
+    children:
+      - stable_key: foundation-models
+        name: "Foundation Models"
+        kind: sub_domain
+        description: "Large-scale pre-trained models including LLMs, multimodal, and agentic systems"
+        children:
+          - stable_key: llms
+            name: "Large Language Models"
+            kind: area
+            description: "Text-focused foundation models (GPT-class, Llama, etc.)"
+          - stable_key: multimodal
+            name: "Vision, Video & Multimodal Models"
+            kind: area
+            description: "Models combining text, image, audio, video"
+          - stable_key: reasoning-agents
+            name: "Reasoning Models & Agentic Systems"
+            kind: area
+            description: "Models optimized for chain-of-thought, tool use, and long-horizon agents"
+          - stable_key: open-source-models
+            name: "Open-Source & Community Models"
+            kind: area
+      - stable_key: training-infra
+        name: "Training Infrastructure"
+        kind: sub_domain
+        description: "Hardware, clusters, and systems required to train frontier models"
+        children:
+          - stable_key: ai-chips
+            name: "AI Chips & Accelerators"
+            kind: area
+            description: "GPUs, TPUs, custom ASICs, and next-gen AI accelerators"
+          - stable_key: clusters
+            name: "GPU/TPU Clusters & Data Centers"
+            kind: area
+            description: "Large-scale AI training clusters and hyperscale facilities"
+          - stable_key: power-cooling
+            name: "Power, Cooling & Energy Systems"
+            kind: area
+            description: "Power delivery, liquid cooling, and energy infrastructure for AI"
+          - stable_key: interconnects
+            name: "High-Speed Interconnects & Networking"
+            kind: area
+      - stable_key: inference-edge
+        name: "Inference & Edge Deployment"
+        kind: sub_domain
+        description: "Serving models at scale in cloud, edge, and on-device environments"
+        children:
+          - stable_key: cloud-inference
+            name: "Cloud-Scale Inference"
+            kind: area
+            description: "High-throughput inference platforms and serving infrastructure"
+          - stable_key: edge-on-device
+            name: "Edge & On-Device Inference"
+            kind: area
+            description: "Optimized inference for phones, cars, robots, and embedded devices"
+          - stable_key: optimization
+            name: "Quantization, Distillation & Optimization"
+            kind: area
+            description: "Techniques to reduce model size and latency"
+      - stable_key: data-datasets
+        name: "Data & Datasets"
+        kind: sub_domain
+        description: "Large-scale data collection, curation, and synthetic data generation"
+        children:
+          - stable_key: web-scale-data
+            name: "Web-Scale & Multimodal Datasets"
+            kind: area
+          - stable_key: synthetic-data
+            name: "Synthetic Data Generation"
+            kind: area
+          - stable_key: data-labeling
+            name: "Data Labeling, Curation & Quality"
+            kind: area
+      - stable_key: model-lifecycle
+        name: "Model Development & Lifecycle"
+        kind: sub_domain
+        description: "Training frameworks, fine-tuning, alignment, and MLOps for models"
+        children:
+          - stable_key: training-frameworks
+            name: "Training Frameworks & Tooling"
+            kind: area
+          - stable_key: fine-tuning-alignment
+            name: "Fine-tuning, RLHF & Alignment"
+            kind: area
+          - stable_key: evaluation
+            name: "Evaluation, Benchmarking & Red Teaming"
+            kind: area
+      - stable_key: ai-safety
+        name: "AI Safety, Security & Governance"
+        kind: sub_domain
+        description: "Research and tools for safe, secure, and responsible AI deployment"
+        children:
+          - stable_key: safety-alignment
+            name: "Safety & Alignment Research"
+            kind: area
+          - stable_key: security
+            name: "Model Security & Adversarial Robustness"
+            kind: area
+          - stable_key: governance
+            name: "Evaluation, Auditing & Policy Tools"
+            kind: area
+
+  - stable_key: crypto-industry
+    name: "Crypto Industry"
+    kind: domain
+    description: "Blockchain networks, cryptocurrencies, DeFi, NFTs, and digital asset markets"
+    default_aspects:
+      - companies
+      - market
+      - technology
+      - events
+    search_queries:
+      - aspect: events
+        query: "recent developments launches partnerships in {scope_name} crypto"
+      - aspect: technology
+        query: "new technology or protocol updates in {scope_name}"
+    children:
+      - stable_key: layer-1-blockchains
+        name: "Layer 1 Blockchains"
+        kind: sub_domain
+        description: "Foundational blockchain networks"
+        children:
+          - stable_key: bitcoin
+            name: "Bitcoin"
+            kind: area
+          - stable_key: ethereum
+            name: "Ethereum"
+            kind: area
+          - stable_key: solana
+            name: "Solana"
+            kind: area
+          - stable_key: other-l1s
+            name: "Other Major L1s"
+            kind: area
+      - stable_key: layer-2-scaling
+        name: "Layer 2 Scaling & Rollups"
+        kind: sub_domain
+        children:
+          - stable_key: optimistic-rollups
+            name: "Optimistic Rollups"
+            kind: area
+          - stable_key: zk-rollups
+            name: "ZK-Rollups & Validity Proofs"
+            kind: area
+      - stable_key: defi
+        name: "DeFi (Decentralized Finance)"
+        kind: sub_domain
+        children:
+          - stable_key: lending-borrowing
+            name: "Lending & Borrowing Protocols"
+            kind: area
+          - stable_key: dex-amm
+            name: "DEXs & Automated Market Makers"
+            kind: area
+          - stable_key: derivatives-perps
+            name: "Derivatives & Perpetual Futures"
+            kind: area
+      - stable_key: stablecoins
+        name: "Stablecoins"
+        kind: sub_domain
+        description: "Pegged digital assets designed for price stability and payments"
+        children:
+          - stable_key: fiat-collateralized
+            name: "Fiat-Collateralized Stablecoins"
+            kind: area
+          - stable_key: crypto-collateralized
+            name: "Crypto-Collateralized Stablecoins"
+            kind: area
+          - stable_key: algorithmic
+            name: "Algorithmic & Hybrid Stablecoins"
+            kind: area
+      - stable_key: crypto-payments
+        name: "Crypto-Based Payments"
+        kind: sub_domain
+        description: "Payment infrastructure, remittances, and merchant adoption using cryptocurrencies and stablecoins"
+        children:
+          - stable_key: on-chain-payments
+            name: "On-Chain Payments & Remittances"
+            kind: area
+          - stable_key: merchant-adoption
+            name: "Merchant Payments & Point-of-Sale"
+            kind: area
+          - stable_key: payment-protocols
+            name: "Payment Protocols & Rails"
+            kind: area
+      - stable_key: nfts-gaming
+        name: "NFTs, Gaming & Digital Collectibles"
+        kind: sub_domain
+        children:
+          - stable_key: nfts
+            name: "Non-Fungible Tokens"
+            kind: area
+          - stable_key: web3-gaming
+            name: "Blockchain Gaming & Metaverse"
+            kind: area
+      - stable_key: crypto-infra
+        name: "Crypto Infrastructure & Tools"
+        kind: sub_domain
+        children:
+          - stable_key: oracles-bridges
+            name: "Oracles, Bridges & Cross-Chain"
+            kind: area
+          - stable_key: wallets-custody
+            name: "Wallets, Custody & Key Management"
+            kind: area
+      - stable_key: network-security
+        name: "Network Security & Consensus"
+        kind: sub_domain
+        children:
+          - stable_key: proof-of-work
+            name: "Proof-of-Work Mining"
+            kind: area
+          - stable_key: proof-of-stake
+            name: "Proof-of-Stake & Validation"
+            kind: area
+      - stable_key: cefi-institutions
+        name: "CeFi & Institutional Adoption"
+        kind: sub_domain
+        children:
+          - stable_key: centralized-exchanges
+            name: "Centralized Exchanges (CEX)"
+            kind: area
+          - stable_key: etfs-funds
+            name: "ETFs, Funds & Institutional Products"
+            kind: area
+          - stable_key: institutional-services
+            name: "Institutional & OTC Services"
+            kind: area
+      - stable_key: regulation-policy
+        name: "Regulatory & Policy Developments"
+        kind: sub_domain
+        children:
+          - stable_key: policy-regulation
+            name: "Policy & Regulatory Developments"
+            kind: area
+      - stable_key: security-risk
+        name: "Security, Hacks & Risk Management"
+        kind: sub_domain
+        children:
+          - stable_key: exploits-hacks
+            name: "Exploits, Hacks & Smart Contract Risks"
+            kind: area
+          - stable_key: risk-tools
+            name: "Risk Management & Insurance"
+            kind: area
+
+# Notes:
+# - Top-level domains (kind: domain) appear directly at the highest navigation level.
+# - The same lower-level concept (e.g. "AI Infrastructure") can be modeled as areas under different industries.
+# - Entities like "NVIDIA" or "xAI" can belong to multiple top-level industries via MEMBER_OF.
+# - Additional top-level industries can be added by extending this list.
+# - User-created ad-hoc scopes get kind: "custom".

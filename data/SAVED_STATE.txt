@@ -1,0 +1,63 @@
+Investment Research Graph — Saved State (2026-06-27)
+
+=== What was saved ===
+- 410 nodes
+- 1019 edges
+- Full Space Industry + other domains populated via real Grok discovery
+  (companies, developments, evidence for launch, moon, hardware, propulsion, etc.)
+
+=== Critical files (must keep together) ===
+data/graph.db                 Primary SQLite store (use this at runtime)
+data/graph.json               Portable JSON snapshot (recommended for backup/git)
+data/config/scopes.yaml       Scope hierarchy + discovery search_queries
+
+=== After restart / new shell / fresh clone: how to get back exactly here ===
+
+Option A — Fastest (when you still have the data/ folder)
+-------------------------------------------------------
+cd /path/to/InvestmentResearch
+PYTHONPATH=backend/app python3 -c "
+from models.graph import GraphStore
+store = GraphStore('data/graph.db')
+print('Loaded', len(store.get_all_nodes()), 'nodes /', len(store.get_all_edges()), 'edges')
+store.close()
+"
+
+# Then you can immediately run more discovery or the API.
+
+Option B — Restore from the JSON snapshot (portable)
+---------------------------------------------------
+# Make sure data/graph.json and data/config/scopes.yaml exist.
+
+cd /path/to/InvestmentResearch
+PYTHONPATH=backend/app python3 -c '
+from models.graph import GraphStore
+store = GraphStore("data/graph.db")
+store.import_json("data/graph.json", clear_first=True)
+store.close()
+print("Restored 410/1019 graph state.")
+'
+
+# Or use the helper:
+PYTHONPATH=backend/app python3 restore_graph.py
+
+Option C — Using the save/restore scripts
+----------------------------------------
+# Save current DB state to the JSON snapshot
+PYTHONPATH=backend/app python3 save_graph.py
+
+# Restore from snapshot into DB
+PYTHONPATH=backend/app python3 restore_graph.py
+
+=== Important notes ===
+- XAI_API_KEY is never saved. Set it in your environment before running any discovery:
+  export XAI_API_KEY=...
+- scopes.yaml controls the tree structure. Do not delete it.
+- After restore you can re-run:
+    PYTHONPATH=backend/app python3 -c "
+    from models.graph import example_graph
+    nodes, edges = example_graph()   # will do more discovery + persist
+    "
+- The .db is the live store. The .json is the human-portable backup.
+
+This snapshot captures the exact state after the Space discovery runs + full example_graph pass.

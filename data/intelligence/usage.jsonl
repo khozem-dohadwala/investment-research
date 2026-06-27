@@ -1,0 +1,5 @@
+{"timestamp": "2026-06-27T14:52:55.257418Z", "task": "semantic_search", "provider": "xai", "model": "grok-3", "latency_ms": 420.5, "input_tokens": 320, "output_tokens": 85, "estimated_cost": 0.0, "tool_calls": 0, "error": null}
+{"timestamp": "2026-06-27T14:53:00.719094Z", "task": "semantic_search", "provider": "xai", "model": "grok-3", "latency_ms": 385.0, "input_tokens": 1250, "output_tokens": 340, "estimated_cost": 0.0, "tool_calls": 0, "error": null}
+{"timestamp": "2026-06-27T14:53:00.719420Z", "task": "structured_extraction", "provider": "openai", "model": "gpt-4o", "latency_ms": 520.0, "input_tokens": 980, "output_tokens": 210, "estimated_cost": 0.0, "tool_calls": 0, "error": null}
+{"timestamp": "2026-06-27T14:53:08.152313Z", "task": "semantic_search", "provider": "xai", "model": "grok-3", "latency_ms": 385, "input_tokens": 1250, "output_tokens": 340, "estimated_cost": 0.01135, "tool_calls": 0, "error": null}
+{"timestamp": "2026-06-27T14:53:08.152628Z", "task": "structured_extraction", "provider": "openai", "model": "gpt-4o", "latency_ms": 520, "input_tokens": 980, "output_tokens": 210, "estimated_cost": 0.00455, "tool_calls": 0, "error": null}
